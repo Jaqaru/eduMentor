@@ -11,6 +11,45 @@ require_once __DIR__ . '/datos.php';
 
 $action = isset($_GET['action']) ? $_GET['action'] : (isset($_POST['action']) ? $_POST['action'] : '');
 
+// 0. Autenticación / Inicio de Sesión API
+if ($action === 'login') {
+    $correo = isset($_POST['correo']) ? trim($_POST['correo']) : '';
+    $clave  = isset($_POST['clave']) ? trim($_POST['clave']) : '';
+
+    if (empty($correo) || empty($clave)) {
+        // Soporte si vino en php://input
+        $input = json_decode(file_get_contents('php://input'), true);
+        if (is_array($input)) {
+            $correo = isset($input['correo']) ? trim($input['correo']) : '';
+            $clave  = isset($input['clave']) ? trim($input['clave']) : '';
+        }
+    }
+
+    if (empty($correo) || empty($clave)) {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'mensaje' => 'Por favor ingresa tu correo y contraseña.']);
+        exit;
+    }
+
+    if (iniciarSesion($correo, $clave)) {
+        $u = obtenerUsuarioActual();
+        // Seguridad: únicamente devolver id, nombre, correo y rol
+        echo json_encode([
+            'status'  => 'ok',
+            'usuario' => [
+                'id'     => (int)$u['id'],
+                'nombre' => $u['nombre'],
+                'correo' => $u['correo'],
+                'rol'    => $u['rol']
+            ]
+        ]);
+    } else {
+        http_response_code(401);
+        echo json_encode(['status' => 'error', 'mensaje' => 'Correo o contraseña incorrectos.']);
+    }
+    exit;
+}
+
 // 1. Consulta al Asistente RAG
 if ($action === 'preguntar') {
     if (!estaAutenticado()) {
@@ -27,11 +66,15 @@ if ($action === 'preguntar') {
     }
 
     $usuario = obtenerUsuarioActual();
+    $estudiante_id = (isset($_POST['estudiante_id']) && (int)$_POST['estudiante_id'] > 0)
+        ? (int)$_POST['estudiante_id']
+        : (int)$usuario['id'];
+
     $resultado = procesarConsultaRAG($curso_id, $pregunta);
 
-    // Registrar la consulta con sus fuentes
+    // Registrar la consulta con sus fuentes en MySQL
     $consulta = guardarConsulta(
-        $usuario['id'],
+        $estudiante_id,
         $usuario['nombre'],
         $curso_id,
         $pregunta,

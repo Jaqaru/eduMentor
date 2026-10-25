@@ -1,7 +1,11 @@
 <?php
+/**
+ * EduMentor RAG - Inicio de Sesión
+ * Aplicaciones Distribuidas I - Grupo 03
+ */
 require_once __DIR__ . '/backend/auth.php';
 
-// Si ya tiene sesión, redirigir al panel
+// Si ya tiene sesión activa, redirigir al panel
 if (estaAutenticado()) {
     header('Location: dashboard.php');
     exit;
@@ -14,19 +18,72 @@ if (isset($_GET['error']) && $_GET['error'] === 'requiere_login') {
     $error = 'Debes iniciar sesión para acceder a ese módulo.';
 }
 
-// Procesar formulario de login
+// Detección de petición API / AJAX que espera JSON
+$esPeticionJson = (isset($_SERVER['HTTP_ACCEPT']) && stripos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)
+               || (isset($_SERVER['CONTENT_TYPE']) && stripos($_SERVER['CONTENT_TYPE'], 'application/json') !== false)
+               || (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+               || isset($_GET['json'])
+               || (isset($_POST['format']) && $_POST['format'] === 'json');
+
+// Procesar formulario o petición POST de login
 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $correo = isset($_POST['correo']) ? trim($_POST['correo']) : '';
-    $clave  = isset($_POST['clave']) ? trim($_POST['clave']) : '';
+    $correo = '';
+    $clave  = '';
+
+    // Si viene en payload JSON crudo (ej. fetch con JSON.stringify)
+    if ($esPeticionJson && empty($_POST)) {
+        $inputJson = json_decode(file_get_contents('php://input'), true);
+        if (is_array($inputJson)) {
+            $correo = isset($inputJson['correo']) ? trim($inputJson['correo']) : '';
+            $clave  = isset($inputJson['clave']) ? trim($inputJson['clave']) : '';
+        }
+    } else {
+        $correo = isset($_POST['correo']) ? trim($_POST['correo']) : '';
+        $clave  = isset($_POST['clave']) ? trim($_POST['clave']) : '';
+    }
 
     if (empty($correo) || empty($clave)) {
         $error = 'Por favor ingresa tu correo y contraseña.';
+        if ($esPeticionJson) {
+            header('Content-Type: application/json; charset=UTF-8');
+            http_response_code(400);
+            echo json_encode([
+                'status'  => 'error',
+                'mensaje' => $error
+            ]);
+            exit;
+        }
     } else {
         if (iniciarSesion($correo, $clave)) {
-            header('Location: dashboard.php');
-            exit;
+            if ($esPeticionJson) {
+                header('Content-Type: application/json; charset=UTF-8');
+                $u = obtenerUsuarioActual();
+                // Seguridad: solo devolver id, nombre, correo y rol (NUNCA la contraseña)
+                echo json_encode([
+                    'status'  => 'ok',
+                    'usuario' => [
+                        'id'     => (int)$u['id'],
+                        'nombre' => $u['nombre'],
+                        'correo' => $u['correo'],
+                        'rol'    => $u['rol']
+                    ]
+                ]);
+                exit;
+            } else {
+                header('Location: dashboard.php');
+                exit;
+            }
         } else {
             $error = 'Correo o contraseña incorrectos. Revisa los datos e inténtalo de nuevo.';
+            if ($esPeticionJson) {
+                header('Content-Type: application/json; charset=UTF-8');
+                http_response_code(401);
+                echo json_encode([
+                    'status'  => 'error',
+                    'mensaje' => $error
+                ]);
+                exit;
+            }
         }
     }
 }
@@ -46,39 +103,17 @@ require_once __DIR__ . '/includes/header.php';
     <form action="login.php" method="POST" class="form" id="loginForm">
       <div class="form-group">
         <label for="correo">Correo institucional</label>
-        <input class="input-control" type="email" id="correo" name="correo" required placeholder="usuario@uns.edu.pe" value="<?php echo isset($_POST['correo']) ? htmlspecialchars($_POST['correo']) : ''; ?>">
+        <input class="input-control" type="email" id="correo" name="correo" required placeholder="tu@correo.com">
       </div>
       
       <div class="form-group">
         <label for="clave">Contraseña</label>
-        <input class="input-control" type="password" id="clave" name="clave" required minlength="6">
+        <input class="input-control" type="password" id="clave" name="clave" required minlength="6" placeholder="••••••••">
         <label class="check"><input type="checkbox" id="verClave"> Mostrar contraseña</label>
       </div>
       
       <button type="submit" class="btn-submit">Ingresar</button>
     </form>
-
-    <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #e1e8ed;">
-      <p style="font-weight: 600; margin-bottom: 8px;">Acceso rápido de prueba:</p>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <button type="button" class="btn btn-sm" onclick="cargarCredenciales('docente@uns.edu.pe', 'docente123')">
-          Acceder como Docente
-        </button>
-        <button type="button" class="btn btn-sec btn-sm" onclick="cargarCredenciales('estudiante@uns.edu.pe', 'estudiante123')">
-          Acceder como Estudiante
-        </button>
-      </div>
-      <p class="nota">Cuentas: <code>docente@uns.edu.pe</code> (docente123) &middot; <code>estudiante@uns.edu.pe</code> (estudiante123)</p>
-    </div>
   </section>
 </main>
-
-<script>
-function cargarCredenciales(correo, clave) {
-  document.getElementById('correo').value = correo;
-  document.getElementById('clave').value = clave;
-  document.getElementById('loginForm').submit();
-}
-</script>
-
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

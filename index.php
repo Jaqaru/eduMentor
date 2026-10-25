@@ -17,9 +17,9 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 
     <div class="chat-demo" aria-label="Ejemplo de consulta">
-      <p class="burbuja est">¿Cuál es la diferencia entre arquitectura cliente-servidor y arquitectura distribuida?</p>
-      <p class="burbuja ia">En la cliente-servidor, un servidor central atiende a los clientes. En la distribuida, los componentes se reparten en varios nodos que cooperan a través de una red sin depender de un único punto de fallo.
-        <small>Fuente: Separata Unidad 1: Fundamentos de Arquitecturas Distribuidas, pág. 4</small>
+      <p class="burbuja est" style="color: var(--azul-osc) !important; font-weight: 600 !important;">¿Cuál es la diferencia entre arquitectura cliente-servidor y arquitectura distribuida?</p>
+      <p class="burbuja ia" style="color: var(--azul-osc) !important; font-weight: 600 !important;">En la cliente-servidor, un servidor central atiende a los clientes. En la distribuida, los componentes se reparten en varios nodos que cooperan a través de una red sin depender de un único punto de fallo.
+        <small style="color: var(--verde-osc) !important; font-weight: 700 !important;">Fuente: Separata Unidad 1: Fundamentos de Arquitecturas Distribuidas, pág. 4</small>
       </p>
     </div>
   </section>

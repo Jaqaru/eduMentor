@@ -28,13 +28,35 @@ function esEstudiante() {
     return $u && $u['rol'] === 'estudiante';
 }
 
-// Inicia sesión consultando la tabla `usuarios` en MySQL
+// Inicia sesión consultando la tabla `usuarios` en MySQL con password_verify() y password_hash()
 function iniciarSesion($correo, $clave) {
     $correo = trim(strtolower($correo));
 
     $u = obtenerUsuarioPorCorreo($correo);
-    if ($u && $u['clave'] === $clave) {
+    if (!$u) {
+        return false;
+    }
+
+    $claveValida = false;
+
+    // 1. Verificación estándar con password_verify (para hashes bcrypt/argon2)
+    if (password_verify($clave, $u['clave'])) {
+        $claveValida = true;
+        // Si el algoritmo o costo necesita actualizarse
+        if (password_needs_rehash($u['clave'], PASSWORD_BCRYPT)) {
+            actualizarClaveUsuario($u['id'], password_hash($clave, PASSWORD_BCRYPT));
+        }
+    }
+    // 2. Compatibilidad si la base de datos tenía contraseñas en texto plano:
+    //    Si coincide, se valida y se migra de inmediato a hash seguro con password_hash()
+    elseif ($u['clave'] === $clave) {
+        $claveValida = true;
+        actualizarClaveUsuario($u['id'], password_hash($clave, PASSWORD_BCRYPT));
+    }
+
+    if ($claveValida) {
         session_regenerate_id(true); // evita fijación de sesión
+        // Seguridad: la sesión almacena estrictamente id, nombre, correo y rol (nunca la clave)
         $_SESSION['usuario'] = [
             'id'     => (int)$u['id'],
             'nombre' => $u['nombre'],
@@ -43,6 +65,7 @@ function iniciarSesion($correo, $clave) {
         ];
         return true;
     }
+
     return false;
 }
 

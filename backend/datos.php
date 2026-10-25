@@ -32,6 +32,21 @@ function obtenerUsuarioPorCorreo($correo) {
     return $st->fetch() ?: null;
 }
 
+// Actualiza la contraseña hasheada de un usuario
+function actualizarClaveUsuario($id, $hash) {
+    $st = obtenerConexionBD()->prepare('UPDATE usuarios SET clave = ? WHERE id = ?');
+    return $st->execute([$hash, (int)$id]);
+}
+
+// Registra un nuevo usuario asegurando siempre el hash bcrypt de la contraseña
+function registrarUsuario($nombre, $correo, $clave, $rol = 'estudiante') {
+    $pdo = obtenerConexionBD();
+    $hash = password_hash($clave, PASSWORD_BCRYPT);
+    $st = $pdo->prepare('INSERT INTO usuarios (nombre, correo, clave, rol) VALUES (?, ?, ?, ?)');
+    $st->execute([trim($nombre), trim(strtolower($correo)), $hash, $rol]);
+    return (int)$pdo->lastInsertId();
+}
+
 // ========================= CURSOS =========================
 function obtenerCursos() {
     return obtenerConexionBD()->query('SELECT * FROM cursos ORDER BY id')->fetchAll();
@@ -216,21 +231,67 @@ function guardarValoracion($consulta_id, $utilidad, $reporte = null) {
         return false;
     }
 
-    $st = $pdo->prepare('INSERT INTO valoraciones (consulta_id, utilidad, reporte) VALUES (?, ?, ?)
-                         ON DUPLICATE KEY UPDATE utilidad = COALESCE(VALUES(utilidad), utilidad),
-                                                 reporte  = COALESCE(VALUES(reporte), reporte)');
-    return $st->execute([(int)$consulta_id, $utilidad, $reporte]);
+    // Verificar si ya existe registro de valoración para esta consulta
+    $stCheck = $pdo->prepare('SELECT id, utilidad, reporte FROM valoraciones WHERE consulta_id = ? LIMIT 1');
+    $stCheck->execute([(int)$consulta_id]);
+    $existente = $stCheck->fetch();
+
+    if ($existente) {
+        $nuevaUtilidad = ($utilidad !== null) ? $utilidad : $existente['utilidad'];
+        $nuevoReporte  = ($reporte !== null) ? $reporte : $existente['reporte'];
+        $stUp = $pdo->prepare('UPDATE valoraciones SET utilidad = ?, reporte = ? WHERE id = ?');
+        return $stUp->execute([$nuevaUtilidad, $nuevoReporte, (int)$existente['id']]);
+    }
+
+    // Registro inicial de valoración en la base de datos
+    $stIns = $pdo->prepare('INSERT INTO valoraciones (consulta_id, utilidad, reporte) VALUES (?, ?, ?)');
+    return $stIns->execute([(int)$consulta_id, $utilidad, $reporte]);
 }
 
-// ========================= MOTOR RAG (línea base: recuperación por palabras clave) =========================
+// Función auxiliar para normalizar texto eliminando tildes y diacríticos
+function normalizarTextoRAG($str) {
+    $str = mb_strtolower($str, 'UTF-8');
+    return str_replace(
+        ['á','é','í','ó','ú','ü','ñ'],
+        ['a','e','i','o','u','u','n'],
+        $str
+    );
+}
+
+// ========================= MOTOR RAG (recuperación fundamentada por relevancia temática) =========================
 function procesarConsultaRAG($curso_id, $pregunta) {
     $curso = obtenerCursoPorId($curso_id);
 
-    $palabras = preg_split('/[\s,\.¿\?\!]+/u', mb_strtolower($pregunta, 'UTF-8'));
-    $stopwords = ['que', 'cual', 'cuales', 'como', 'para', 'sirve', 'una', 'uno', 'los', 'las', 'del', 'por', 'con', 'entre', 'sobre'];
-    $keywords = array_filter($palabras, function($w) use ($stopwords) {
-        return mb_strlen($w) >= 3 && !in_array($w, $stopwords);
-    });
+    $preguntaNorm = normalizarTextoRAG($pregunta);
+    $palabras = preg_split('/[\s,\.¿\?\!;:\"\'\(\)\-]+/u', $preguntaNorm);
+
+    // Lista exhaustiva de stopwords (palabras vacías) en español
+    $stopwords = [
+        'que', 'cual', 'cuales', 'como', 'para', 'sirve', 'sirven', 'una', 'uno', 'unos', 'unas',
+        'los', 'las', 'del', 'por', 'con', 'entre', 'sobre', 'este', 'esta', 'estos', 'estas',
+        'ser', 'son', 'era', 'fue', 'tiene', 'tienen', 'hace', 'hacen', 'segun', 'definicion',
+        'concepto', 'explica', 'diferencia', 'ejemplo', 'puede', 'pueden', 'todo', 'toda'
+    ];
+
+    $keywords = array_values(array_filter($palabras, function($w) use ($stopwords) {
+        return mb_strlen($w) >= 3 && !in_array($w, $stopwords, true);
+    }));
+
+    $totalKw = count($keywords);
+    if ($totalKw === 0) {
+        $nombreCurso = $curso ? $curso['nombre'] : 'este curso';
+        return [
+            'encontrado' => false,
+            'respuesta'  => "No se encontró información suficiente en los materiales académicos autorizados para {$nombreCurso}. Como asistente EduMentor RAG, respondo exclusivamente sobre la base documental autorizada por el docente para evitar información no sustentada.",
+            'fuentes'    => []
+        ];
+    }
+
+    // Umbral estricto de coincidencia temática:
+    // - Si hay 1 o 2 keywords: deben coincidir todas las keywords presentes (1/1 o 2/2).
+    // - Si hay 3 o más: debe coincidir al menos el 50% de las keywords (mínimo 2).
+    // Esto previene emparejamientos por palabras genéricas aisladas (como 'datos' para consultas sobre normalización en cursos ajenos).
+    $umbralMinimo = ($totalKw <= 2) ? $totalKw : (int)ceil($totalKw * 0.5);
 
     // Solo fragmentos de materiales del curso consultado (contenido autorizado)
     $st = obtenerConexionBD()->prepare('SELECT f.id AS fragmento_id, f.pagina, f.texto, m.titulo, m.unidad
@@ -241,16 +302,27 @@ function procesarConsultaRAG($curso_id, $pregunta) {
 
     $candidatos = [];
     foreach ($st->fetchAll() as $frag) {
-        $texto = mb_strtolower($frag['texto'], 'UTF-8');
+        $textoFragNorm = normalizarTextoRAG($frag['texto']);
         $coincidencias = 0;
+
         foreach ($keywords as $kw) {
-            if (mb_strpos($texto, $kw) !== false) {
+            if (mb_strpos($textoFragNorm, $kw) !== false) {
                 $coincidencias++;
             }
         }
-        if ($coincidencias > 0) {
+
+        // Ponderación adicional si el fragmento contiene bigramas consecutivos de la pregunta
+        $bonusFrase = 0;
+        for ($i = 0; $i < $totalKw - 1; $i++) {
+            $bigrama = $keywords[$i] . ' ' . $keywords[$i + 1];
+            if (mb_strpos($textoFragNorm, $bigrama) !== false) {
+                $bonusFrase += 2;
+            }
+        }
+
+        if ($coincidencias >= $umbralMinimo) {
             $candidatos[] = [
-                'score'        => $coincidencias,
+                'score'        => $coincidencias + $bonusFrase,
                 'fragmento_id' => (int)$frag['fragmento_id'],
                 'documento'    => $frag['titulo'],
                 'unidad'       => $frag['unidad'],
@@ -387,4 +459,27 @@ function obtenerEstadisticas() {
         'porcentaje_util'       => $totalValoradas > 0 ? round(($utiles / $totalValoradas) * 100) : 100,
         'reportes'              => $reportes
     ];
+}
+
+// Eliminar material y su archivo asociado
+function eliminarMaterial($id) {
+    $pdo = obtenerConexionBD();
+
+    // Primero se lee el nombre del archivo para poder borrarlo del disco
+    $st = $pdo->prepare('SELECT archivo FROM materiales WHERE id = ?');
+    $st->execute([(int)$id]);
+    $archivo = $st->fetchColumn();
+    if ($archivo === false) {
+        return false;
+    }
+
+    // Borra el material (sus fragmentos se borran solos por ON DELETE CASCADE)
+    $pdo->prepare('DELETE FROM materiales WHERE id = ?')->execute([(int)$id]);
+
+    // Borra el archivo físico de la carpeta uploads/
+    $ruta = __DIR__ . '/../uploads/' . basename($archivo);
+    if (is_file($ruta)) {
+        unlink($ruta);
+    }
+    return true;
 }
