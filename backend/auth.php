@@ -1,7 +1,7 @@
 <?php
 /**
  * EduMentor RAG - Módulo de Autenticación y Control de Sesiones
- * Arquitectura Cliente-Servidor (Backend PHP)
+ * Las contraseñas se guardan con hash (bcrypt) y se validan con password_verify().
  */
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -10,51 +10,44 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once __DIR__ . '/datos.php';
 
-// Verifica si existe un usuario autenticado
 function estaAutenticado() {
     return isset($_SESSION['usuario']) && !empty($_SESSION['usuario']);
 }
 
-// Obtiene los datos del usuario en sesión actual
 function obtenerUsuarioActual() {
     return estaAutenticado() ? $_SESSION['usuario'] : null;
 }
 
-// Verifica si el usuario actual es Docente
 function esDocente() {
     $u = obtenerUsuarioActual();
     return $u && $u['rol'] === 'docente';
 }
 
-// Verifica si el usuario actual es Estudiante
 function esEstudiante() {
     $u = obtenerUsuarioActual();
     return $u && $u['rol'] === 'estudiante';
 }
 
-// Inicia sesión verificando credenciales
+// Inicia sesión consultando la tabla `usuarios` en MySQL
 function iniciarSesion($correo, $clave) {
     $correo = trim(strtolower($correo));
-    $clave = trim($clave);
 
-    $usuarios = obtenerUsuarios();
-    foreach ($usuarios as $u) {
-        if (strtolower($u['correo']) === $correo && $u['clave'] === $clave) {
-            $_SESSION['usuario'] = [
-                'id'     => $u['id'],
-                'nombre' => $u['nombre'],
-                'correo' => $u['correo'],
-                'rol'    => $u['rol']
-            ];
-            return true;
-        }
+    $u = obtenerUsuarioPorCorreo($correo);
+    if ($u && password_verify($clave, $u['clave'])) {
+        session_regenerate_id(true); // evita fijación de sesión
+        $_SESSION['usuario'] = [
+            'id'     => (int)$u['id'],
+            'nombre' => $u['nombre'],
+            'correo' => $u['correo'],
+            'rol'    => $u['rol']
+        ];
+        return true;
     }
     return false;
 }
 
-// Cierra la sesión activa
 function cerrarSesion() {
-    unset($_SESSION['usuario']);
+    $_SESSION = [];
     if (session_status() === PHP_SESSION_ACTIVE) {
         session_destroy();
     }

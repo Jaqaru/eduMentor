@@ -51,6 +51,7 @@ CREATE TABLE fragmentos (
   material_id INT NOT NULL,
   pagina INT,
   texto TEXT NOT NULL,
+  FULLTEXT KEY ft_fragmentos_texto (texto),
   FOREIGN KEY (material_id) REFERENCES materiales(id) ON DELETE CASCADE
 );
 
@@ -79,9 +80,10 @@ CREATE TABLE consulta_fuentes (
 CREATE TABLE valoraciones (
   id INT AUTO_INCREMENT PRIMARY KEY,
   consulta_id INT NOT NULL,
-  utilidad ENUM('util','parcial','no_util') NOT NULL,
+  utilidad ENUM('util','parcial','no_util') NULL,
   reporte ENUM('incorrecta','incompleta','fuente_no_relacionada','no_sustentada') NULL,
   creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_valoracion_consulta (consulta_id),
   FOREIGN KEY (consulta_id) REFERENCES consultas(id) ON DELETE CASCADE
 );
 
@@ -100,10 +102,11 @@ CREATE TABLE preguntas_banco (
 -- DATOS DE DEMOSTRACIÓN Y PRUEBA (SEEDS)
 -- ========================================================
 
--- Usuarios de demostración
+-- Usuarios de demostración (claves hasheadas con bcrypt)
+-- Credenciales de prueba: docente@uns.edu.pe / docente123  |  estudiante@uns.edu.pe / estudiante123
 INSERT INTO usuarios (id, nombre, correo, clave, rol) VALUES
-(1, 'Docente Demo', 'docente@uns.edu.pe', 'docente123', 'docente'),
-(2, 'Estudiante Demo', 'estudiante@uns.edu.pe', 'estudiante123', 'estudiante');
+(1, 'Docente Demo', 'docente@uns.edu.pe', '$2y$10$ky5FymM/XVOrAa2IymMWyu2Y6rYebRve3.HRKTkIntDyH.UHYRLZW', 'docente'),
+(2, 'Estudiante Demo', 'estudiante@uns.edu.pe', '$2y$10$D7lcU2z9YhDIIuDP1IL66.18xS8irEaCeIUO0vQSmQLDzDjtgCryy', 'estudiante');
 
 -- Cursos registrados
 INSERT INTO cursos (id, docente_id, codigo, nombre, ciclo, descripcion) VALUES
