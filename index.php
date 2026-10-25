@@ -72,7 +72,7 @@ require_once __DIR__ . '/includes/header.php';
         <li>Luis Santiago Patricio Miranda &mdash; Coordinador</li>
         <li>Eddy Joseph Giraldo Barreto</li>
         <li>Diego Jeanpiere Hinostroza Melo</li>
-        <li>David Daniel Carlin Jimenez</li>
+        <li>David Jesús Valverde Maldonado</li>
         <li>Victor Rodolfo Tufinio Moreno</li>
       </ul>
       <p style="margin-top: 15px; font-size: 0.9rem; color: #555;">Docente del curso: <strong>Dr. Mirko Manrique Ronceros</strong></p>
