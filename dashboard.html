@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi panel | EduMentor RAG</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="header">
+  <a class="logo" href="index.html">EduMentor <span>RAG</span></a>
+  <button class="menu-btn" id="menuBtn" aria-label="Abrir menú">&#9776;</button>
+  <nav class="nav" id="menu">
+    <a href="index.html">Inicio</a>
+    <a href="index.html#proyecto">El proyecto</a>
+    <a href="index.html#nosotros">Quiénes somos</a>
+    <a href="index.html#ubicacion">Ubicación</a>
+    <a href="dashboard.html" id="navPanel" hidden>Mi panel</a>
+    <a href="login.html" id="navLogin" class="btn-nav">Ingresar</a>
+    <a href="#" id="navSalir" class="btn-nav" hidden>Salir</a>
+  </nav>
+</header>
+<main class="container">
+  <h2>Hola, <span id="dashNombre"></span></h2>
+  <p class="intro">Rol: <strong id="dashRol"></strong></p>
+  <div class="grid" id="panelDocente" hidden>
+    <article class="card">
+      <h3>Mis cursos</h3>
+      <p>Registra y administra tus asignaturas a cargo.</p>
+      <div style="margin-top: 15px;">
+        <a class="btn btn-sm" href="cursos.php">Ver cursos</a>
+        <a class="btn btn-sec btn-sm" href="registrar_curso.php">+ Registrar curso</a>
+      </div>
+    </article>
+    <article class="card">
+      <h3>Material académico</h3>
+      <p>Carga separatas, diapositivas y guías procesadas en fragmentos RAG.</p>
+      <div style="margin-top: 15px;">
+        <a class="btn btn-sm" href="materiales.php">Cargar y ver material</a>
+      </div>
+    </article>
+    <article class="card">
+      <h3>Preguntas de Estudiantes</h3>
+      <p>Revisa las dudas formuladas por los alumnos y su índice de satisfacción.</p>
+      <div style="margin-top: 15px;">
+        <a class="btn btn-sm" href="historial.php">Revisar consultas</a>
+      </div>
+    </article>
+    <article class="card">
+      <h3>Banco de preguntas</h3>
+      <p>Configura reactivos y evaluaciones para tus asignaturas.</p>
+      <div style="margin-top: 15px;">
+        <a class="btn btn-sm" href="evaluaciones.php">Gestionar banco</a>
+      </div>
+    </article>
+    <article class="card">
+      <h3>Estadísticas</h3>
+      <p>Métricas de uso del asistente, satisfacción y control de alucinaciones.</p>
+      <div style="margin-top: 15px;">
+        <a class="btn btn-sm" href="estadisticas.php">Ver estadísticas</a>
+      </div>
+    </article>
+  </div>
+  <div class="grid" id="panelEstudiante" hidden>
+    <a class="card card-link" href="asistente.php" aria-label="Abrir el asistente">
+      <h3>Consultar al asistente RAG</h3>
+      <div class="boceto" aria-hidden="true">
+        <span class="b-linea b-der"></span>
+        <span class="b-linea b-izq"></span>
+        <span class="b-linea b-izq corta"></span>
+        <span class="b-input"></span>
+      </div>
+      <p>Pregunta sobre tu curso y recibe la respuesta fundamentada con sus fuentes oficiales.</p>
+      <span class="btn">Abrir el chat &raquo;</span>
+    </a>
+    <article class="card">
+      <h3>Mi historial</h3>
+      <p>Revisa tus preguntas anteriores, fuentes citadas y valoraciones.</p>
+      <div style="margin-top: 20px;">
+        <a class="btn" href="historial.php">Ver historial</a>
+      </div>
+    </article>
+    <article class="card">
+      <h3>Evaluaciones</h3>
+      <p>Practica resolviendo preguntas basadas en los contenidos del curso.</p>
+      <div style="margin-top: 20px;">
+        <a class="btn" href="evaluaciones.php">Iniciar autoevaluación</a>
+      </div>
+    </article>
+    <article class="card">
+      <h3>Materiales del curso</h3>
+      <p>Accede a las separatas y guías de estudio autorizadas por tus docentes.</p>
+      <div style="margin-top: 20px;">
+        <a class="btn btn-sec" href="materiales.php">Ver material</a>
+      </div>
+    </article>
+  </div>
+</main>
+<footer class="footer">
+  <p>&copy; 2026 EduMentor RAG &mdash; Grupo 03 &middot; Aplicaciones Distribuidas I &middot; Universidad Nacional del Santa</p>
+</footer>
+<script src="js/main.js"></script>
+</body>
+</html>

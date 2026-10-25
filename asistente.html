@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente | EduMentor RAG</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="header">
+  <a class="logo" href="index.html">EduMentor <span>RAG</span></a>
+  <button class="menu-btn" id="menuBtn" aria-label="Abrir menú">&#9776;</button>
+  <nav class="nav" id="menu">
+    <a href="index.html">Inicio</a>
+    <a href="index.html#proyecto">El proyecto</a>
+    <a href="index.html#nosotros">Quiénes somos</a>
+    <a href="index.html#ubicacion">Ubicación</a>
+    <a href="registrar_curso.html">Registrar curso</a>
+    <a href="dashboard.html" id="navPanel" hidden>Mi panel</a>
+    <a href="login.html" id="navLogin" class="btn-nav">Ingresar</a>
+    <a href="#" id="navSalir" class="btn-nav" hidden>Salir</a>
+  </nav>
+</header>
+<main class="container">
+  <p><a href="dashboard.html">&laquo; Volver a mi panel</a></p>
+  <section class="chat">
+    <div class="chat-top">
+      <h2>Asistente EduMentor</h2>
+      <label for="cursoSel" class="sr">Curso</label>
+      <select id="cursoSel" class="input-control">
+        <option>Aplicaciones Distribuidas I</option>
+        <option>Base de Datos II</option>
+        <option>Ingeniería de Software</option>
+      </select>
+    </div>
+    <p class="aviso">Boceto de la interfaz: las respuestas son de ejemplo. En la siguiente etapa el asistente buscará en el material del curso.</p>
+    <div class="chat-msgs" id="chatMsgs" aria-live="polite">
+      <p class="burbuja ia">Hola, soy tu asistente. Elige un curso y pregúntame sobre su material.</p>
+    </div>
+    <div class="chips" id="chips">
+      <button type="button" class="chip">¿Qué es una arquitectura distribuida?</button>
+      <button type="button" class="chip">¿Qué es el patrón MVC?</button>
+      <button type="button" class="chip">¿Para qué sirve una API REST?</button>
+    </div>
+    <form id="chatForm" class="chat-form">
+      <label for="pregunta" class="sr">Tu pregunta</label>
+      <input class="input-control" type="text" id="pregunta" required maxlength="200" placeholder="Escribe tu pregunta...">
+      <button type="submit" class="btn">Enviar</button>
+    </form>
+  </section>
+</main>
+<footer class="footer">
+  <p>&copy; 2026 EduMentor RAG &mdash; Grupo 03 &middot; Aplicaciones Distribuidas I &middot; Universidad Nacional del Santa</p>
+</footer>
+<script src="js/main.js"></script>
+</body>
+</html>
