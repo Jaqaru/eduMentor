@@ -1,0 +1,151 @@
+:root{--azul:#003366;--azul-osc:#002244;--verde:#008080;--verde-osc:#005555;--fondo:#f0f2f5;--txt:#333}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--fondo);color:var(--txt);line-height:1.6}
+a{color:var(--verde)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #ffb703;outline-offset:2px}
+
+/* Cabecera y navegación (Flexbox) */
+.header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;background:var(--azul);padding:12px 24px}
+.logo{color:#fff;font-size:1.4rem;font-weight:700;text-decoration:none}
+.logo span{color:#7fe0d8}
+.nav{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.nav a{color:#fff;text-decoration:none;padding:8px 12px;border-radius:4px;font-weight:600;transition:background .3s}
+.nav a:hover,.nav a.activo{background:var(--verde)}
+.nav .btn-nav{border:2px solid #7fe0d8}
+.menu-btn{display:none;background:none;border:0;color:#fff;font-size:1.8rem;cursor:pointer}
+
+/* Hero */
+.hero{display:flex;gap:30px;align-items:center;justify-content:center;flex-wrap:wrap;background:var(--azul-osc);color:#fff;padding:50px 24px}
+.hero-txt{flex:1 1 340px;max-width:520px}
+.hero h1{font-size:2rem;line-height:1.25;margin-bottom:14px}
+.hero p{margin-bottom:20px;color:#d6e4f0}
+.chat-demo{flex:1 1 300px;max-width:420px;background:#fff;color:var(--txt);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.burbuja{padding:10px 14px;border-radius:10px;font-size:.95rem}
+.burbuja.est{background:#e6f2ff;align-self:flex-end}
+.burbuja.ia{background:#e8f6f4}
+.burbuja small{display:block;margin-top:6px;color:var(--verde-osc)}
+
+/* Contenido */
+.container{max-width:1000px;margin:30px auto;padding:0 15px}
+.container.estrecho{max-width:700px}
+.container h2{color:var(--azul);margin-bottom:10px}
+.intro{margin-bottom:18px}
+.grid{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:30px}
+.grid .card{flex:1 1 260px}
+.card{background:#fff;padding:25px;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,.1);border-top:5px solid var(--verde)}
+.card h3{color:var(--azul);margin-bottom:6px}
+.modulos{list-style:none;display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+.modulos li{background:#fff;border:1px solid #cfd8e3;border-radius:20px;padding:6px 14px;font-size:.92rem}
+.estado{background:#e6f2ff;border-left:4px solid var(--azul);padding:12px 15px;margin-top:12px}
+.integrantes{margin:12px 0 0 20px}
+.mapa{margin-bottom:14px}
+.mapa iframe{width:100%;height:380px;border:0;border-radius:8px}
+
+/* Botones */
+.btn{display:inline-block;background:var(--verde);color:#fff;border:0;padding:10px 20px;border-radius:4px;font-weight:700;text-decoration:none;cursor:pointer;font-size:1rem;margin:4px 6px 4px 0}
+.btn:hover{background:var(--verde-osc)}
+.btn-sec{background:transparent;border:2px solid var(--verde);color:var(--verde)}
+.hero .btn-sec{color:#fff;border-color:#7fe0d8}
+
+/* Formularios */
+.form-group{margin-bottom:18px}
+.form-group label{display:block;margin-bottom:6px;font-weight:600}
+.form-group label.check{font-weight:400;margin-top:6px}
+.input-control{width:100%;padding:10px;border:1px solid #ccc;border-radius:4px;font-size:14px}
+.input-control:focus{border-color:var(--verde)}
+.btn-submit{background:var(--verde);color:#fff;border:0;padding:12px 20px;font-size:16px;border-radius:4px;cursor:pointer;width:100%;font-weight:700}
+.btn-submit:hover{background:var(--verde-osc)}
+.alerta{background:#fdecea;border-left:4px solid #c0392b;padding:10px 14px;margin:10px 0;color:#7b1e14}
+.resultado{background:#e6f2ff;border-left:4px solid var(--azul);padding:15px;margin-bottom:16px}
+.ok{color:green}
+.nota{margin-top:16px;font-size:.85rem;color:#555}
+
+.footer{text-align:center;padding:15px;background:var(--azul);color:#fff;margin-top:40px;font-size:.9rem}
+
+/* Responsive */
+@media (max-width:700px){
+  .menu-btn{display:block}
+  .nav{display:none;flex-direction:column;align-items:stretch;width:100%;margin-top:10px}
+  .nav.abierto{display:flex}
+  .nav a{text-align:center;border-bottom:1px solid rgba(255,255,255,.1)}
+  .hero h1{font-size:1.5rem}
+  .card{padding:15px}
+  .mapa iframe{height:280px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+[hidden]{display:none!important}
+
+/* Tarjeta con boceto en el panel */
+.card-link{display:block;text-decoration:none;color:inherit;transition:transform .2s,box-shadow .2s}
+.card-link:hover{transform:translateY(-3px);box-shadow:0 8px 16px rgba(0,0,0,.15)}
+.boceto{display:flex;flex-direction:column;gap:8px;border:2px dashed #9fb3c8;border-radius:8px;padding:12px;margin:10px 0;background:#fafcff}
+.b-linea{height:12px;border-radius:6px;background:#cfd8e3;display:block}
+.b-der{width:60%;align-self:flex-end;background:#b9dcd9}
+.b-izq{width:75%}
+.b-izq.corta{width:45%}
+.b-input{height:18px;border:2px solid #9fb3c8;border-radius:9px;display:block;margin-top:4px}
+
+/* Chat */
+.sr{position:absolute;left:-9999px}
+.chat{background:#fff;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,.1);border-top:5px solid var(--verde);padding:20px}
+.chat-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.chat-top h2{margin:0}
+.chat-top select{width:auto;min-width:220px}
+.aviso{font-size:.85rem;color:#555;margin-bottom:12px}
+.chat-msgs{display:flex;flex-direction:column;gap:10px;min-height:260px;max-height:420px;overflow-y:auto;padding:12px;border:2px dashed #cfd8e3;border-radius:8px;background:#fafcff}
+.chat-msgs .burbuja{max-width:85%}
+.chat-msgs .est{align-self:flex-end}
+.valorar{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.valorar button{border:1px solid #9fb3c8;background:#fff;border-radius:14px;padding:3px 10px;font-size:.8rem;cursor:pointer}
+.valorar button:hover{background:#e8f6f4}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.chip{border:1px solid var(--verde);color:var(--verde-osc);background:#fff;border-radius:16px;padding:5px 12px;font-size:.85rem;cursor:pointer}
+.chip:hover{background:#e8f6f4}
+.chat-form{display:flex;gap:8px}
+.chat-form .btn{margin:0}
+@media (max-width:700px){.chat-top select{width:100%}}
+
+/* Estilos complementarios para módulos de EduMentor RAG */
+.acciones-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.btn-sm{padding:6px 12px;font-size:0.85rem;margin:0 4px 4px 0}
+.btn-peligro{background:#c0392b}
+.btn-peligro:hover{background:#962d22}
+.alerta-exito{background:#eafaf1;border-left:4px solid #2ecc71;padding:12px 16px;margin:12px 0;color:#1e8449;border-radius:0 4px 4px 0}
+
+/* Tablas responsivas */
+.tabla-responsive{width:100%;overflow-x:auto;margin:15px 0}
+.tabla{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.tabla th,.tabla td{padding:12px 14px;text-align:left;border-bottom:1px solid #eef2f6;font-size:0.92rem}
+.tabla th{background:#e8f0f8;color:var(--azul);font-weight:700}
+.tabla tr:hover{background:#f8fafc}
+
+/* Badges e indicadores */
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:0.78rem;font-weight:600}
+.badge-verde{background:#e6f7f2;color:#006655}
+.badge-azul{background:#e6f0fa;color:#003366}
+.badge-amarillo{background:#fff8e6;color:#b78103}
+.badge-rojo{background:#fdecea;color:#a82315}
+
+/* Métricas y Estadísticas */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin:20px 0}
+.stat-card{background:#fff;padding:20px;border-radius:8px;box-shadow:0 3px 8px rgba(0,0,0,.08);border-left:5px solid var(--verde)}
+.stat-card.azul{border-left-color:var(--azul)}
+.stat-card.amarillo{border-left-color:#f39c12}
+.stat-num{font-size:2.2rem;font-weight:700;color:var(--azul);line-height:1.1;margin-bottom:6px}
+.stat-label{font-size:0.88rem;color:#555;font-weight:600}
+
+/* Fuentes RAG y fragmentos */
+.fuente-box{background:#f2f8f7;border:1px solid #bce3dc;border-radius:6px;padding:10px 14px;margin-top:10px;font-size:0.88rem}
+.fuente-box strong{color:var(--verde-osc)}
+.fuente-texto{font-style:italic;color:#333;margin-top:4px;display:block;border-left:3px solid var(--verde);padding-left:8px;background:#fff;padding:6px 10px;border-radius:0 4px 4px 0}
+.reportar-box{margin-top:8px;font-size:0.82rem;color:#555}
+.reportar-box select{padding:4px 8px;font-size:0.82rem;border-radius:4px;border:1px solid #cfd8e3}
+
+/* Módulo de Evaluación / Quiz */
+.quiz-card{background:#fff;padding:20px;border-radius:8px;box-shadow:0 3px 8px rgba(0,0,0,.08);margin-bottom:20px;border-left:4px solid var(--azul)}
+.quiz-pregunta{font-weight:700;font-size:1.05rem;margin-bottom:12px;color:var(--azul-osc)}
+.quiz-opcion{display:block;padding:10px 14px;border:1px solid #dcdfe6;border-radius:6px;margin-bottom:8px;cursor:pointer;transition:background .2s}
+.quiz-opcion:hover{background:#f4f8fb}
+.quiz-opcion input{margin-right:10px}
+.quiz-explicacion{background:#eef6fc;border-left:3px solid var(--azul);padding:10px 14px;margin-top:10px;border-radius:0 4px 4px 0;font-size:0.88rem}
+
