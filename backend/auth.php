@@ -33,7 +33,7 @@ function iniciarSesion($correo, $clave) {
     $correo = trim(strtolower($correo));
 
     $u = obtenerUsuarioPorCorreo($correo);
-    if ($u && password_verify($clave, $u['clave'])) {
+    if ($u && $u['clave'] === $clave) {
         session_regenerate_id(true); // evita fijación de sesión
         $_SESSION['usuario'] = [
             'id'     => (int)$u['id'],
