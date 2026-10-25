@@ -11,44 +11,16 @@ $cursoFiltroId = isset($_GET['curso_id']) ? (int)$_GET['curso_id'] : 0;
 $mensajeExito = '';
 $error = '';
 
-// Eliminar material (solo docente)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && esDocente() && ($_POST['accion'] ?? '') === 'eliminar') {
-    if (eliminarMaterial((int)($_POST['material_id'] ?? 0))) {
-        $mensajeExito = 'Material eliminado correctamente.';
-    } else {
-        $error = 'No se encontró el material a eliminar.';
-    }
 // Procesar carga de documento por parte del docente
-} elseif (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && esDocente()) {
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && esDocente()) {
     $curso_id = isset($_POST['curso_id']) ? (int)$_POST['curso_id'] : 0;
     $titulo   = isset($_POST['titulo']) ? trim($_POST['titulo']) : '';
     $tipo     = isset($_POST['tipo']) ? trim($_POST['tipo']) : 'Separata';
     $unidad   = isset($_POST['unidad']) ? trim($_POST['unidad']) : 'Unidad 1';
     $resumen  = isset($_POST['resumen']) ? trim($_POST['resumen']) : '';
     
-    // Subir archivo real
-    $archivoNombre = '';
-    $errorArchivo = '';
-
-    if (empty($_FILES['archivo']['name'])) {
-        $errorArchivo = 'Selecciona un archivo PDF o DOCX.';
-    } elseif ($_FILES['archivo']['error'] !== UPLOAD_ERR_OK) {
-        $errorArchivo = 'No se pudo subir el archivo (código ' . $_FILES['archivo']['error'] . ').';
-    } else {
-        $ext = strtolower(pathinfo($_FILES['archivo']['name'], PATHINFO_EXTENSION));
-        if (!in_array($ext, ['pdf', 'docx'], true)) {
-            $errorArchivo = 'Solo se permiten archivos PDF o DOCX.';
-        } elseif ($_FILES['archivo']['size'] > 10 * 1024 * 1024) {
-            $errorArchivo = 'El archivo supera los 10 MB.';
-        } else {
-            $original = preg_replace('/[^A-Za-z0-9._-]/', '_', basename($_FILES['archivo']['name']));
-            $archivoNombre = uniqid() . '_' . $original;
-            if (!move_uploaded_file($_FILES['archivo']['tmp_name'], __DIR__ . '/uploads/' . $archivoNombre)) {
-                $errorArchivo = 'No se pudo guardar el archivo en el servidor.';
-                $archivoNombre = '';
-            }
-        }
-    }
+    // Simulación de nombre de archivo subido
+    $archivoNombre = !empty($_FILES['archivo']['name']) ? basename($_FILES['archivo']['name']) : (isset($_POST['archivo_simulado']) ? trim($_POST['archivo_simulado']) : 'documento_academico.pdf');
 
     if ($curso_id <= 0 || empty($titulo)) {
         $error = 'Por favor selecciona un curso y escribe el título del material.';
