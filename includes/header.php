@@ -17,7 +17,7 @@ $paginaActual = basename($_SERVER['PHP_SELF']);
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?php echo isset($tituloPagina) ? htmlspecialchars($tituloPagina) . ' | EduMentor RAG' : 'EduMentor RAG'; ?></title>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=2.2">
 </head>
 <body>
 <header class="header">

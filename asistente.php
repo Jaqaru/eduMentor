@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const formData = new FormData();
     formData.append('action', 'preguntar');
     formData.append('curso_id', cursoId);
+    formData.append('estudiante_id', <?php echo (int)$usuario['id']; ?>);
     formData.append('pregunta', texto);
 
     fetch('backend/api.php', {
