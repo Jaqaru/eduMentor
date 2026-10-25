@@ -11,22 +11,53 @@ $cursoFiltroId = isset($_GET['curso_id']) ? (int)$_GET['curso_id'] : 0;
 $mensajeExito = '';
 $error = '';
 
-// Procesar carga de documento por parte del docente
-if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && esDocente()) {
+
+// Eliminar material (solo docente)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && esDocente() && ($_POST['accion'] ?? '') === 'eliminar') {
+    if (eliminarMaterial((int)($_POST['material_id'] ?? 0))) {
+        $mensajeExito = 'Material eliminado correctamente.';
+    } else {
+        $error = 'No se encontró el material a eliminar.';
+    }
+    //Procedar documento
+} elseif (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && esDocente()) {
     $curso_id = isset($_POST['curso_id']) ? (int)$_POST['curso_id'] : 0;
     $titulo   = isset($_POST['titulo']) ? trim($_POST['titulo']) : '';
     $tipo     = isset($_POST['tipo']) ? trim($_POST['tipo']) : 'Separata';
     $unidad   = isset($_POST['unidad']) ? trim($_POST['unidad']) : 'Unidad 1';
     $resumen  = isset($_POST['resumen']) ? trim($_POST['resumen']) : '';
     
-    // Simulación de nombre de archivo subido
-    $archivoNombre = !empty($_FILES['archivo']['name']) ? basename($_FILES['archivo']['name']) : (isset($_POST['archivo_simulado']) ? trim($_POST['archivo_simulado']) : 'documento_academico.pdf');
+    // Subir archivo
+    $archivoNombre = '';
+    $errorArchivo = '';
+
+    if (empty($_FILES['archivo']['name'])) {
+        $errorArchivo = 'Selecciona un archivo PDF o DOCX.';
+    } elseif ($_FILES['archivo']['error'] !== UPLOAD_ERR_OK) {
+        $errorArchivo = 'No se pudo subir el archivo (código ' . $_FILES['archivo']['error'] . ').';
+    } else {
+        $ext = strtolower(pathinfo($_FILES['archivo']['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, ['pdf', 'docx'], true)) {
+            $errorArchivo = 'Solo se permiten archivos PDF o DOCX.';
+        } elseif ($_FILES['archivo']['size'] > 10 * 1024 * 1024) {
+            $errorArchivo = 'El archivo supera los 10 MB.';
+        } else {
+            $original = preg_replace('/[^A-Za-z0-9._-]/', '_', basename($_FILES['archivo']['name']));
+            $archivoNombre = uniqid() . '_' . $original;
+            if (!move_uploaded_file($_FILES['archivo']['tmp_name'], __DIR__ . '/uploads/' . $archivoNombre)) {
+                $errorArchivo = 'No se pudo guardar el archivo en el servidor.';
+                $archivoNombre = '';
+            }
+        }
+    }
 
     if ($curso_id <= 0 || empty($titulo)) {
         $error = 'Por favor selecciona un curso y escribe el título del material.';
+    } elseif ($errorArchivo !== '') {
+        $error = $errorArchivo;
     } else {
         guardarMaterial($curso_id, $titulo, $unidad, $tipo, $archivoNombre, $resumen);
-        $mensajeExito = "Documento '{$titulo}' cargado y procesado exitosamente en fragmentos para la base de conocimiento RAG.";
+        $mensajeExito = "Documento '{$titulo}' cargado correctamente y fragmentado para la base de conocimiento.";
     }
 }
 
@@ -112,8 +143,8 @@ require_once __DIR__ . '/includes/header.php';
         </div>
 
         <div class="form-group">
-          <label for="archivo_simulado">Nombre o archivo del documento (PDF / DOCX)</label>
-          <input class="input-control" type="text" id="archivo_simulado" name="archivo_simulado" placeholder="Ej. separata_u3_rest.pdf" value="separata_u3_rest.pdf">
+          <label for="archivo">Archivo del documento (PDF o DOCX, máximo 10 MB)</label>
+          <input class="input-control" type="file" id="archivo" name="archivo" accept=".pdf,.docx" required>
         </div>
 
         <div class="form-group">
@@ -155,12 +186,26 @@ require_once __DIR__ . '/includes/header.php';
               <td><?php echo $cursoObj ? htmlspecialchars($cursoObj['nombre']) : 'General'; ?></td>
               <td><span class="badge badge-azul"><?php echo htmlspecialchars($m['tipo']); ?></span></td>
               <td><span class="badge badge-verde"><?php echo htmlspecialchars($m['unidad']); ?></span></td>
-              <td><code><?php echo htmlspecialchars($m['archivo']); ?></code></td>
+              <td>
+                <?php if (file_exists(__DIR__ . '/uploads/' . $m['archivo'])): ?>
+                  <a href="uploads/<?php echo rawurlencode($m['archivo']); ?>" target="_blank">Ver archivo</a>
+                <?php else: ?>
+                  <code><?php echo htmlspecialchars($m['archivo']); ?></code> <small>(sin archivo)</small>
+                <?php endif; ?>
+              </td>
               <td><span class="badge badge-verde"><?php echo count($frags); ?> fragmentos</span></td>
               <td>
                 <button type="button" class="btn btn-sec btn-sm" onclick="verFragmentos(<?php echo $m['id']; ?>, '<?php echo addslashes(htmlspecialchars($m['titulo'])); ?>')">
                   Ver fragmentos
                 </button>
+                <?php if (esDocente()): ?>
+                  <form method="POST" action="materiales.php" style="display:inline"
+                        onsubmit="return confirm('¿Eliminar este material y sus fragmentos?');">
+                    <input type="hidden" name="accion" value="eliminar">
+                    <input type="hidden" name="material_id" value="<?php echo $m['id']; ?>">
+                    <button type="submit" class="btn btn-sm" style="background:#c0392b;">Eliminar</button>
+                  </form>
+                <?php endif; ?>
               </td>
             </tr>
           <?php endforeach; ?>

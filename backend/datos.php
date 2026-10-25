@@ -388,3 +388,25 @@ function obtenerEstadisticas() {
         'reportes'              => $reportes
     ];
 }
+//Eliminar material
+function eliminarMaterial($id) {
+    $pdo = obtenerConexionBD();
+
+    // Primero se lee el nombre del archivo para poder borrarlo del disco
+    $st = $pdo->prepare('SELECT archivo FROM materiales WHERE id = ?');
+    $st->execute([(int)$id]);
+    $archivo = $st->fetchColumn();
+    if ($archivo === false) {
+        return false;
+    }
+
+    // Borra el material (sus fragmentos se borran solos por ON DELETE CASCADE)
+    $pdo->prepare('DELETE FROM materiales WHERE id = ?')->execute([(int)$id]);
+
+    // Borra el archivo físico de la carpeta uploads/
+    $ruta = __DIR__ . '/../uploads/' . basename($archivo);
+    if (is_file($ruta)) {
+        unlink($ruta);
+    }
+    return true;
+}

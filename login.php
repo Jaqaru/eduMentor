@@ -58,18 +58,6 @@ require_once __DIR__ . '/includes/header.php';
       <button type="submit" class="btn-submit">Ingresar</button>
     </form>
 
-    <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #e1e8ed;">
-      <p style="font-weight: 600; margin-bottom: 8px;">Acceso rápido de prueba:</p>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <button type="button" class="btn btn-sm" onclick="cargarCredenciales('docente@uns.edu.pe', 'docente123')">
-          Acceder como Docente
-        </button>
-        <button type="button" class="btn btn-sec btn-sm" onclick="cargarCredenciales('estudiante@uns.edu.pe', 'estudiante123')">
-          Acceder como Estudiante
-        </button>
-      </div>
-      <p class="nota">Cuentas: <code>docente@uns.edu.pe</code> (docente123) &middot; <code>estudiante@uns.edu.pe</code> (estudiante123)</p>
-    </div>
   </section>
 </main>
 
