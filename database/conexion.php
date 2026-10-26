@@ -2,10 +2,7 @@
 /**
  * EduMentor RAG - Conexión PDO a MySQL (XAMPP)
  * Aplicaciones Distribuidas I - Grupo 03
- *
- * Los valores por defecto sirven para XAMPP local (usuario root, sin clave).
- * En otro entorno se pueden sobrescribir con variables de entorno
- * (DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS) sin tocar el código.
+
  */
 
 function obtenerConexionBD() {
