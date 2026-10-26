@@ -96,9 +96,9 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 
   <?php else: ?>
-    <!-- ==========================================
+    <!-- 
          PANEL FUNCIONAL PARA EL ESTUDIANTE
-         ========================================== -->
+          -->
     <div class="grid">
       <!-- 1. Asistente RAG -->
       <a class="card card-link" href="asistente.php" aria-label="Abrir el asistente RAG">
